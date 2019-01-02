@@ -176,10 +176,10 @@
   notify:
     - restart netdata
 
-- name: start and enable netdata
-  become: yes
-  service: name=netdata state=restarted enabled=yes
-  when: backend_block_added|changed
+# - name: start and enable netdata
+#   become: yes
+#   service: name=netdata state=restarted enabled=yes
+#   when: backend_block_added|changed
 
 
 
