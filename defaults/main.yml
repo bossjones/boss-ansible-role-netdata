@@ -2,7 +2,7 @@
 # defaults file for ansible-netdata
 
 boss__netdata__netdata_proxy_enabled: True
-boss__netdata__netdata_nginx_enabled: True
+boss__netdata__netdata_nginx_enabled: False
 boss__netdata__netdata_graphite_backend_enabled: True
 # boss__netdata__netdata_interface: 'enp0s8'
 boss__netdata__netdata_interface: 'eth0'

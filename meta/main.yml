@@ -1,8 +1,8 @@
 galaxy_info:
-  author: Larry Smith Jr.
-  description: An [Ansible] role to install/configure [Netdata]
+  author: bossjones
+  description: An Ansible role to install/configure Netdata
 
-  license: MIT
+  license: Apache
 
   min_ansible_version: 2.0
 
