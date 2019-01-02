@@ -10,7 +10,7 @@ boss__netdata__netdata_master_group_label: 'masters'
 
 boss__netdata__netdata_master_ip: "{{ hostvars[groups[boss__netdata__netdata_master_group_label][0]]['ansible_' + boss__netdata__netdata_interface].ipv4.address }}"
 
-boss__netdata__graphite_master_hostname: "{{ groups[boss__netdata__netdata_master_group_label] }}"
+boss__netdata__graphite_master_hostname: "{{ groups[boss__netdata__netdata_master_group_label][0] }}"
 
 # Defines info about enabling/scheduling auto updates for Netdata version
 # https://github.com/firehol/netdata/wiki/Installation#auto-update
