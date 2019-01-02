@@ -162,9 +162,9 @@
               enabled = yes
               data source = average
               type = graphite
-              destination = localhost:2003
+              destination = {{boss__netdata__graphite_master_hostname}}:2003
               prefix = netdata
-              hostname = {{boss__netdata__graphite_master_hostname}}
+              hostname = {{ansible_hostname}}
               update every = 10
               buffer on failures = 10
               timeout ms = 20000

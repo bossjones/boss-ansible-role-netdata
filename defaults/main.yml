@@ -7,8 +7,11 @@ boss__netdata__netdata_graphite_backend_enabled: True
 boss__netdata__netdata_interface: 'eth0'
 
 boss__netdata__netdata_master_group_label: 'masters'
+boss__netdata__netdata_graphite_group_label: 'graphite_master'
 
 boss__netdata__netdata_master_ip: "{{ hostvars[groups[boss__netdata__netdata_master_group_label][0]]['ansible_' + boss__netdata__netdata_interface].ipv4.address }}"
+
+boss__netdata__netdata_graphite_ip: "{{ hostvars[groups[boss__netdata__netdata_graphite_group_label][0]]['ansible_' + boss__netdata__netdata_interface].ipv4.address }}"
 
 boss__netdata__graphite_master_hostname: "{{ groups[boss__netdata__netdata_master_group_label][0] }}"
 
