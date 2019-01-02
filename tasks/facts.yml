@@ -35,5 +35,8 @@
     set_fact:
       boss__kubernetes__kubeadm__apt_arch: "{{sys_arch}}"
 
+  - name: Collect all facts for all hosts involved
+    setup:
+
   tags:
   - always

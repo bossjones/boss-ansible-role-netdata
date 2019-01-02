@@ -2,6 +2,7 @@
 # defaults file for ansible-netdata
 
 boss__netdata__netdata_proxy_enabled: True
+boss__netdata__netdata_nginx_enabled: True
 boss__netdata__netdata_graphite_backend_enabled: True
 # boss__netdata__netdata_interface: 'enp0s8'
 boss__netdata__netdata_interface: 'eth0'
@@ -11,7 +12,9 @@ boss__netdata__netdata_graphite_group_label: 'graphite_master'
 
 boss__netdata__netdata_master_ip: "{{ hostvars[groups[boss__netdata__netdata_master_group_label][0]]['ansible_' + boss__netdata__netdata_interface].ipv4.address }}"
 
-boss__netdata__netdata_graphite_ip: "{{ hostvars[groups[boss__netdata__netdata_graphite_group_label][0]]['ansible_' + boss__netdata__netdata_interface].ipv4.address }}"
+# FIXME: Note, since this is run from another play, we don't have all available facts to grab things like net interfaces, instead, we just need to pull value [ip]
+# boss__netdata__netdata_graphite_ip: "{{ hostvars[groups[boss__netdata__netdata_graphite_group_label][0]]['ansible_' + boss__netdata__netdata_interface].ipv4.address }}"
+boss__netdata__netdata_graphite_ip: "{{ hostvars[groups[boss__netdata__netdata_graphite_group_label][0]]['ip'] }}"
 
 boss__netdata__graphite_master_hostname: "{{ groups[boss__netdata__netdata_master_group_label][0] }}"
 

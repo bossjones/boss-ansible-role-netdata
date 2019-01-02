@@ -1,64 +1,4 @@
 ---
-- name: "create /etc/nginx/sites-available/netdata"
-  copy:
-    content: |
-
-      log_format netdata '$remote_addr - $remote_user [$time_local] '
-        '"$request" $status $body_bytes_sent '
-        '$request_length $request_time '
-        '"$http_referer" "$http_user_agent"';
-
-      access_log /var/log/nginx/netdata.access.log;
-      error_log /var/log/nginx/netdata.error.log;
-
-      upstream netdata {
-          server 127.0.0.1:19999;
-          keepalive 1024;
-      }
-
-      server {
-          listen *:8081;
-          # the virtual host name of this
-          underscores_in_headers on;
-
-          # max upload size
-          client_max_body_size 75M;   # adjust to taste
-
-          location / {
-              proxy_set_header X-Forwarded-Host $host;
-              proxy_set_header X-Forwarded-Server $host;
-              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-              proxy_pass http://netdata;
-              proxy_http_version 1.1;
-              proxy_pass_request_headers on;
-              proxy_set_header Connection "keep-alive";
-              proxy_store off;
-              gzip on;
-              gzip_proxied any;
-              gzip_types *;
-
-          }
-
-      }
-
-
-    dest: "/etc/nginx/sites-available/netdata"
-    owner: "root"
-    group: "root"
-    mode: 0644
-
-- name: 'Create symlink for /etc/nginx/sites-enabled/netdata'
-  file:
-    src: "/etc/nginx/sites-available/netdata"
-    dest: "/etc/nginx/sites-enabled/netdata"
-    state: link
-
-
-- name: 'delete symlink for /etc/nginx/sites-enabled/default'
-  file:
-    dest: "/etc/nginx/sites-enabled/default"
-    state: absent
-
 - name: "get line of global"
   shell: 'grep -n "\[global\]" /etc/netdata/netdata.conf | cut -d: -f1'
   become: yes
@@ -88,16 +28,6 @@
   become: yes
   when: netdata_lock.stdout.find("No such file or directory") != -1
 
-# - name: "file limits /etc/security/limits.d/nginx.conf"
-#   copy:
-#     content: |
-#       nginx   soft    nofile  10000
-#       nginx   hard    nofile  30000
-#     dest: "/etc/security/limits.d/nginx.conf"
-#     owner: "root"
-#     group: "root"
-#     mode: 0644
-
 - name: "file limits /etc/security/limits.d/netdata.conf"
   copy:
     content: |
@@ -115,44 +45,9 @@
     owner: "root"
     group: "root"
 
-- name: "Create directory: /etc/systemd/system/nginx.service.d"
-  file:
-    path: "/etc/systemd/system/nginx.service.d"
-    state: directory
-    owner: "root"
-    group: "root"
-
-
-# - name: "file limits /etc/systemd/system/nginx.service.d/limits.conf"
-#   copy:
-#     content: |
-#       [Service]
-#       LimitMEMLOCK=infinity
-#       LimitNOFILE=30000
-#       LimitNPROC=infinity
-#       LimitCORE=infinity
-#     dest: "/etc/systemd/system/nginx.service.d/limits.conf"
-#     owner: "root"
-#     group: "root"
-#     mode: 0644
-
-# - name: "file limits /etc/systemd/system/netdata.service.d/limits.conf"
-#   copy:
-#     content: |
-#       [Service]
-#       LimitMEMLOCK=infinity
-#       LimitNOFILE=30000
-#       LimitNPROC=infinity
-#       LimitCORE=infinity
-#     dest: "/etc/systemd/system/netdata.service.d/limits.conf"
-#     owner: "root"
-#     group: "root"
-#     mode: 0644
-
-# - name: updatedb
-#   shell: 'updatedb'
-#   become: yes
-#   register: updatedb
+# - debug: msg="{{ groups[boss__netdata__netdata_master_group_label] }}"
+# - debug: msg="{{hostvars[groups[boss__netdata__netdata_master_group_label][0]] | to_nice_json }}"
+# - debug: msg="{{hostvars[groups[boss__netdata__netdata_graphite_group_label][0]] | to_nice_json }}:2003"
 
 - name: Add backend block
   blockinfile:
@@ -180,11 +75,6 @@
 #   become: yes
 #   service: name=netdata state=restarted enabled=yes
 #   when: backend_block_added|changed
-
-
-
-# --------------------------
-
 
 # Make sure systemd template is up to date
 - name: Ensure systemd directory exists

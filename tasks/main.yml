@@ -1,5 +1,6 @@
 ---
 # tasks file for ansible-netdata
+- include: facts.yml
 
 - include: debian.yml
   when: ansible_os_family == "Debian"
@@ -26,3 +27,6 @@
 
 - include: proxy.yml
   when: boss__netdata__netdata_proxy_enabled
+
+- include: nginx.yml
+  when: boss__netdata__netdata_nginx_enabled
