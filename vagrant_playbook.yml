@@ -156,6 +156,7 @@
       # graphite_cache_graphite_url: 'http://127.0.0.1:8080'
       # bossjones__user: vagrant
       # bossjones__group: vagrant
+      boss__netdata__netdata_interface: 'enp0s8'
 
       netdata_registry_enabled: True
       netdata_registry_to_announce: "http://{{ netdata_stream_master_node }}:{{ netdata_default_port }}"
@@ -172,6 +173,7 @@
   become_method: sudo
   roles:
     - role: ../
+      boss__netdata__netdata_interface: 'enp0s8'
       netdata_registry_enabled: False
       netdata_registry_to_announce: "http://{{ netdata_stream_master_node }}:{{ netdata_default_port }}"
       pri_domain_name: scarlett-office.local
