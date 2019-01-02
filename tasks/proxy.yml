@@ -173,6 +173,8 @@
               send names instead of ids = yes
   register: backend_block_added
   when: boss__netdata__netdata_graphite_backend_enabled is defined and boss__netdata__netdata_graphite_backend_enabled
+  notify:
+    - restart netdata
 
 - name: start and enable netdata
   become: yes
