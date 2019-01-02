@@ -1,0 +1,29 @@
+# https://gist.github.com/gnarf/b103e77f37236ca72d8e
+:vms:
+  netdata-master-01:
+    :hostname: "netdata-master-01"
+    :ip: "192.168.50.112"
+    :ram: 2048
+    :cpu: 2
+    :box: "ubuntu/xenial64"
+    :id: 10
+  netdata-node-01:
+    :hostname: "netdata-node-01"
+    :ip: "192.168.50.113"
+    :ram: 2048
+    :cpu: 2
+    :box: "ubuntu/xenial64"
+    :id: 10
+
+:groups:
+  netdata-master-01:
+    - netdata-master-01
+  servers:
+    - netdata-master-01
+    - netdata-node-01
+  kubernetes-netdata-master-01:
+    - netdata-master-01
+  kubernetes-netdata-node-01:
+    - netdata-node-01
+  kubernetes:
+    - netdata-master-01

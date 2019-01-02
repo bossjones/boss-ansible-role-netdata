@@ -1,0 +1,167 @@
+---
+##############################################################################
+# SERVERS: Install and configure ntp
+##############################################################################
+- hosts: servers
+  name: servers install etckeeper
+  gather_facts: True
+  become: yes
+  become_method: sudo
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  tags:
+    - servers
+    - install
+    - servers_install
+    - etckeeper
+    - tools
+
+  pre_tasks:
+
+    - name: RedHat | Install a few packages for the tests
+      yum: name={{ item }}
+      with_items:
+        - file
+        - nc
+      when: ansible_os_family == "RedHat"
+
+    - name: Debian | Install a few packages for the tests
+      apt: name={{ item }}
+      with_items:
+        - curl
+        - file
+        - netcat
+      when: ansible_os_family == "Debian"
+
+  roles:
+    - role: boss-ansible-role-etckeeper
+    - role: boss-ansible-role-ntp
+      task: install
+      bossjones__user: vagrant
+      bossjones__group: vagrant
+      timezone: 'America/New_York'
+      timezone_update_hardware_clock: False
+      # defaults file for ansible-ntp
+      # Defines if host is ntp_master
+      # set ntp_master to true on specific group_vars/group
+      ntp_master: False
+
+      # Define your ntp_master_servers
+      ntp_master_servers:
+        - 0.ubuntu.pool.ntp.org
+        - 1.ubuntu.pool.ntp.org
+        - 2.ubuntu.pool.ntp.org
+        - 3.ubuntu.pool.ntp.org
+    - role: boss-ansible-role-journald
+    - role: boss-ansible-role-debug
+      boss__debug__debug_variables_file: '/tmp/ansible_variables'
+      boss__debug__dump_dir: '/etc/ansible_dumps'
+      boss__debug__dump_type: 'unified' # seperate
+
+    - role: ansible-timezone
+      timezone: 'America/New_York'
+      timezone_update_hardware_clock: False
+
+    - role: ansible-nginx
+      nginx_listen_port: 8080
+      # SOURCE: https://uwsgi-docs.readthedocs.io/en/latest/Nginx.html
+    - role: ../
+      graphite_secret_key: testtest123
+      version: 1.1.3
+      graphite_install_version: "{{ version }}"
+      graphite_cache_graphite_url: 'http://127.0.0.1:8080'
+      bossjones__user: vagrant
+      bossjones__group: vagrant
+
+  tasks:
+
+    - name: Install nginx (Debian)
+      apt: name=nginx
+      when: ansible_os_family == "Debian"
+
+    - name: Install nginx (RedHat)
+      yum: name=nginx
+      when: ansible_os_family == "RedHat"
+
+    - name: Start nginx
+      service:
+        name: nginx
+        state: restarted
+
+    - name: Make sure processes are running
+      shell: "pgrep {{ item }}"
+      with_items:
+        - carbon-cache
+        - uwsgi
+        - nginx
+
+    - name: Make sure that the carbon-cache process has the expected open file limit
+      shell: "test $(awk '/^Max open files/ { print $4 }' /proc/$(pidof -x carbon-cache.py)/limits) -eq 4096"
+
+    - name: Get sample config file parameters
+      shell: "grep -vE '^#' /opt/graphite/conf/carbon.conf.example | awk -F '=' '/=/{ print $1 }'"
+      register: carbon_conf_example_default_params
+
+    - name: Make sure that we have set all default params in carbon.conf
+      shell: "grep -E '^{{ item }}' /opt/graphite/conf/carbon.conf"
+      with_items: "{{ carbon_conf_example_default_params.stdout_lines }}"
+
+    - name: Get set config file parameters
+      shell: "grep -vE '^#' /opt/graphite/conf/carbon.conf | awk '/=/{ print $1 }'"
+      register: carbon_conf_params
+
+    - name: Make sure that carbon.conf is not using params not found in the example file
+      shell: "grep '{{ item }}' /opt/graphite/conf/carbon.conf.example"
+      with_items: "{{ carbon_conf_params.stdout_lines }}"
+
+    - name: "Make sure we have a Graphite install at localhost:8080"
+      shell: "curl -s http://localhost:8080 | grep 'Graphite Browser'"
+
+    - name: "Make sure that the static content works"
+      shell: "curl -s http://localhost:8080/static/js/composer.js"
+
+    - name: Download a sample graph
+      shell: "curl -so out 'http://localhost:8080/render/?width=586&height=308&_salt=1448804805.156&target=carbon.agents.*-a.cache.size'"
+
+    - name: Make sure that we got a image
+      shell: file out | grep -i image
+
+    - name: "Insert a metric to carbon"
+      shell: echo "local.random.diceroll 4711 $(date +%s)" | nc -w 2 0.0.0.0 2003
+
+    - name: Wait 5 sec
+      command: sleep 5 # pause failes on centos 7 for some reason
+
+    - name: Search for the value from graphite-web
+      shell: "curl -s 'http://localhost:8080/render/?_salt=1448817576.96&target=local.random.diceroll&format=csv' | grep ',4711.0'"
+
+    - name: Remove false positives from carbon creates.log
+      lineinfile:
+        dest: /opt/graphite/storage/log/carbon-cache/carbon-cache-a/creates.log
+        line: "- REMOVED -"
+        regexp: "{{ item }}"
+      with_items:
+        - "creating database file.*errors.wsp"
+        - "creating database metric carbon.agents.*errors"
+        - "new metric carbon.agents.*a.errors matched schema carbon"
+        - "new metric carbon.agents.*a.errors matched aggregation schema default"
+      failed_when: False
+
+    - name: Search for errors in logs
+      shell: test -f {{ item }} && cat {{ item }}
+      register: logout
+      failed_when: >
+        'error' in logout.stdout or
+        'Error' in logout.stdout or
+        'ERROR' in logout.stdout
+      with_items:
+        - /var/log/uwsgi_graphite.log
+        - /var/log/uwsgi/app/graphite.log
+        - /var/log/nginx/graphite.error.log
+        - /var/log/nginx/error.log
+        - /opt/graphite/storage/log/webapp/info.log
+        - /opt/graphite/storage/log/webapp/exception.log
+        - /opt/graphite/storage/log/carbon-cache/carbon-cache-a/query.log
+        - /opt/graphite/storage/log/carbon-cache/carbon-cache-a/listener.log
+        - /opt/graphite/storage/log/carbon-cache/carbon-cache-a/creates.log
+        - /opt/graphite/storage/log/carbon-cache/carbon-cache-a/console.log

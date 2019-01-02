@@ -1,0 +1,9 @@
+Host netdata-master-01*
+  User vagrant
+  Port 22
+  UserKnownHostsFile /dev/null
+  StrictHostKeyChecking no
+  PasswordAuthentication no
+  IdentityFile /Users/malcolm/dev/bossjones/bossjones-playbook-suite/boss-ansible-role-tools/.vagrant/machines/netdata-master-01/virtualbox/private_key
+  IdentitiesOnly yes
+  LogLevel FATAL

@@ -1,0 +1,137 @@
+
+- name: "create /etc/nginx/sites-available/graphite"
+  copy:
+    content: |
+
+      log_format graphite '$remote_addr - $remote_user [$time_local] '
+            '"$request" $status $body_bytes_sent '
+            '$request_length $request_time '
+            '"$http_referer" "$http_user_agent"';
+
+      charset utf-8;
+      access_log /var/log/nginx/graphite.access.log;
+      error_log /var/log/nginx/graphite.error.log;
+
+      # FIXME: Temporarily disabled 12/26/2018
+      # upstream graphite {
+      #     server 127.0.0.1:8083;
+      #     keepalive 1024;
+      # }
+
+      # # the upstream component nginx needs to connect to
+      # upstream django {
+      #     # server unix:///home/www-data/www/mysite/mysite.sock; # for a file socket
+      #     server 127.0.0.1:8001; # for a web port socket (we'll use this first)
+      # }
+
+      server {
+          listen *:8080;
+          # the virtual host name of this
+          # server_name {{graphite_dns_fqdn}};
+          underscores_in_headers on;
+
+          # FIXME: Might not work?
+          # https://github.com/hopsoft/docker-graphite-statsd/blob/master/conf/etc/nginx/sites-enabled/graphite-statsd.conf
+          # root /opt/graphite/webapp/content;
+          # index index.html;
+
+          # max upload size
+          client_max_body_size 75M;   # adjust to taste
+
+          location /static {
+            alias /opt/graphite/webapp/content;
+            expires max;
+          }
+
+          location /stub_status {
+              stub_status on;
+              access_log off;
+              allow 192.168.1.0/24;
+              allow 127.0.0.1;
+              deny all;
+          }
+
+          location /nginx_status {
+            stub_status on;
+            access_log   off;
+            allow 127.0.0.1;
+            deny all;
+          }
+
+          # /usr/local/lib/python2.7/dist-packages/django/contrib/admin/static/admin
+
+          # location /media {
+          #   # django admin static files
+          #   # your Django project's media files - amend as required
+          #   alias /usr/local/lib/python2.7/dist-packages/django/contrib/admin/media/;
+          # }
+
+          # location /admin/auth/admin {
+          #   alias /usr/local/lib/python2.7/dist-packages/django/contrib/admin/static/admin;
+          # }
+
+          # location /admin/auth/user/admin {
+          #   alias /usr/local/lib/python2.7/dist-packages/django/contrib/admin/static/admin;
+          # }
+
+          location / {
+              # proxy_set_header X-Forwarded-Host $host;
+              # proxy_set_header X-Forwarded-Server $host;
+              # proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              # proxy_pass http://graphite;
+              # proxy_http_version 1.1;
+              # proxy_pass_request_headers on;
+              # proxy_set_header Connection "keep-alive";
+              # proxy_store off;
+              gzip on;
+              gzip_proxied any;
+              gzip_types *;
+
+              include uwsgi_params;
+              uwsgi_pass 127.0.0.1:3031;
+
+              # include fastcgi_params;
+              # fastcgi_split_path_info ^()(.*)$;
+              # fastcgi_pass 127.0.0.1:8080;
+
+              # # checks for static file, if not found proxy to app
+              # try_files \$uri @app;
+
+
+              # add_header 'Access-Control-Allow-Origin' '*';
+              # add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+              # add_header 'Access-Control-Allow-Headers' 'Authorization, Content-Type';
+              # add_header 'Access-Control-Allow-Credentials' 'true';
+
+          }
+
+
+      }
+
+
+    dest: "/etc/nginx/sites-available/graphite"
+    owner: "root"
+    group: "root"
+    mode: 0644
+  notify:
+  # - restart uwsgi
+  - restart nginx
+  # - restart carbon-cache
+
+- name: 'Create symlink for /etc/nginx/sites-enabled/graphite'
+  file:
+    src: "/etc/nginx/sites-available/graphite"
+    dest: "/etc/nginx/sites-enabled/graphite"
+    state: link
+  notify: restart nginx
+
+
+- name: 'delete symlink for /etc/nginx/sites-enabled/default'
+  file:
+    dest: "/etc/nginx/sites-enabled/default"
+    state: absent
+  notify: restart nginx
+
+# In ansible playbooks, handlers (such as to restart a service) normally happen at the end of a run. If you need ansible to run a handler between two tasks, there is "flush_handlers".
+- name: flush handlers
+  meta: flush_handlers
