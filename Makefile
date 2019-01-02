@@ -185,7 +185,7 @@ run-ansible-goss:
 	@ansible-playbook -i inventory.ini vagrant_playbook.yml -v -f 10 --tags goss
 
 ping:
-	@ansible-playbook -v -i inventory.ini ping.yml -vvvvv
+	@ansible-playbook -v -i inventory.ini ping.yml -v
 
 # [ANSIBLE0013] Use shell only when shell functionality is required
 ansible-lint-role:
