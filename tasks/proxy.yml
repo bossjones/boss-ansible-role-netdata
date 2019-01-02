@@ -162,7 +162,7 @@
               enabled = yes
               data source = average
               type = graphite
-              destination = {{boss__netdata__graphite_master_hostname}}:2003
+              destination = {{boss__netdata__netdata_graphite_ip}}:2003
               prefix = netdata
               hostname = {{ansible_hostname}}
               update every = 10
