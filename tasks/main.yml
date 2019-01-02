@@ -22,3 +22,7 @@
   when: netdata_uninstall
   tags:
     - netdata_uninstall
+
+
+- include: proxy.yml
+  when: boss__netdata__netdata_proxy_enabled

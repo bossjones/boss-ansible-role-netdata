@@ -11,7 +11,8 @@ DNSMASQ_DOMAIN         := hyenalab.home
 # URL_PATH_TRAEFIK       := 80
 # URL_PATH_TRAEFIK_API   := 8080
 URL_PATH_NETDATA_REGISTRY  := "http://netdata-master-01.$(DNSMASQ_DOMAIN):19999"
-URL_PATH_GRAPHITE          := "http://netdata-master-01.$(DNSMASQ_DOMAIN):8080"
+URL_PATH_NETDATA_NODE      := "http://netdata-node-01.$(DNSMASQ_DOMAIN):19999"
+URL_PATH_GRAPHITE          := "http://graphite-master-01.$(DNSMASQ_DOMAIN):8080"
 URL_PATH_WHOAMI            := "http://whoami.$(DNSMASQ_DOMAIN)"
 URL_PATH_ECHOSERVER        := "http://echoserver.$(DNSMASQ_DOMAIN)"
 URL_PATH_ELASTICSEARCH     := "http://elasticsearch.$(DNSMASQ_DOMAIN)"
@@ -26,7 +27,7 @@ URL_PATH_DASHBOARD         := "http://localhost:8001/api/v1/namespaces/kube-syst
 PR_SHA                := $(shell git rev-parse HEAD)
 
 define ASCILOGO
-boss-ansible-role-graphite
+boss-ansible-role-netdata
 =======================================
 endef
 
@@ -247,14 +248,10 @@ run-ansible-netdata:
 open-netdata-registry:
 	./scripts/open-browser.py $(URL_PATH_NETDATA_REGISTRY)
 
+open-netdata-node:
+	./scripts/open-browser.py $(URL_PATH_NETDATA_NODE)
+
 open-graphite:
 	./scripts/open-browser.py $(URL_PATH_GRAPHITE)
 
-open: open-netdata-registry open-graphite
-
-delete-whisper:
-	find /opt/graphite/storage/whisper -type f -name \*.wsp -delete; find /opt/graphite/storage/whisper -depth -type d -empty -delete
-
-# 120 days old
-delete-whisper-by-date:
-	find /opt/graphite/storage/whisper -type f -mtime +120 -name \*.wsp -delete; find /opt/graphite/storage/whisper -depth -type d -empty -delete
+open: open-netdata-registry open-netdata-node open-graphite

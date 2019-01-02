@@ -1,6 +1,14 @@
 ---
 # defaults file for ansible-netdata
 
+boss__netdata__netdata_proxy_enabled: True
+# boss__netdata__netdata_interface: 'enp0s8'
+boss__netdata__netdata_interface: 'eth0'
+
+boss__netdata__netdata_master_group_label: 'masters'
+
+boss__netdata__netdata_master_ip: "{{ hostvars[groups[boss__netdata__netdata_master_group_label][0]]['ansible_' + boss__netdata__netdata_interface].ipv4.address }}"
+
 # Defines info about enabling/scheduling auto updates for Netdata version
 # https://github.com/firehol/netdata/wiki/Installation#auto-update
 netdata_auto_updates:

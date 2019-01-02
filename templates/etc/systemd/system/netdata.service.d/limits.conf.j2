@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Service]
+# LimitMEMLOCK=infinity
+# LimitNOFILE=1048576
+# LimitNPROC=infinity
+# LimitCORE=infinity
+LimitNOFILE=30000
+
+[Service]
+# Get network environmental variables
+EnvironmentFile=-/etc/default/netdata
