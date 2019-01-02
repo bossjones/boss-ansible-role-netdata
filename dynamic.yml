@@ -1,0 +1,20 @@
+---
+- hosts: servers
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+  # serial: True
+  vars:
+    boss__netdata__netdata_master_group_label: 'graphite_master'
+  pre_tasks:
+
+  - debug: msg="{{ groups[boss__netdata__netdata_master_group_label] }}"
+#   - debug: msg="{{ hostvars[groups[boss__netdata__netdata_master_group_label]] }}"
+
+#   - name: dump
+#     debug:
+#         msg: Hello world! # not required. The customized message that is printed. If omitted, prints a generic message.
+#         var: undefined # not required. A variable name to debug.  Mutually exclusive with the 'msg' option.
+#         verbosity: 0 # not required. A number that controls when the debug is run, if you set to 3 it will only run debug when -vvv or above:
+
+#         boss__netdata__graphite_master_hostname: "{{ hostvars[groups[boss__netdata__netdata_master_group_label]] }}"

@@ -164,7 +164,7 @@
               type = graphite
               destination = localhost:2003
               prefix = netdata
-              hostname = netdata-master-01
+              hostname = {{boss__netdata__graphite_master_hostname}}
               update every = 10
               buffer on failures = 10
               timeout ms = 20000
