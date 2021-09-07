@@ -66,6 +66,7 @@ netdata_debian_pre_reqs:
   - uuid
   - uuid-dev
   - zlib1g-dev
+  - libuv1-dev
 
 # Defines the Git repo to pull down for installs
 netdata_git_repo: https://github.com/netdata/netdata.git
