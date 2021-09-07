@@ -41,8 +41,8 @@ netdata_config_file: /etc/netdata/netdata.conf
 
 # Defines pre-requisites for Debian systems
 netdata_debian_pre_reqs:
-  - autoconf-archive
   - autoconf
+  - autoconf-archive
   - autogen
   - automake
   - build-essential
@@ -50,6 +50,7 @@ netdata_debian_pre_reqs:
   - curl
   - gcc
   - git
+  - json-c-dev
   - libmnl-dev
   - libmnl0
   - libuuid1
@@ -57,10 +58,10 @@ netdata_debian_pre_reqs:
   - make
   - netcat
   - pkg-config
+  - python-yaml
   - python3-mysqldb
   - python3-psycopg2
   - python3-pymongo
-  - python-yaml
   - util-linux
   - uuid
   - uuid-dev
