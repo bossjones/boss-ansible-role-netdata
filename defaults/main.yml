@@ -50,7 +50,7 @@ netdata_debian_pre_reqs:
   - curl
   - gcc
   - git
-  - json-c-dev
+  - libjson-c-dev
   - libmnl-dev
   - libmnl0
   - libuuid1
